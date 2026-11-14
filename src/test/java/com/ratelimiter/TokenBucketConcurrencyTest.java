@@ -54,7 +54,7 @@ class TokenBucketConcurrencyTest {
                     ready.countDown();
                     start.await();
 
-                    return rateLimiter.allowRequest(userId, policy);
+                    return rateLimiter.allowRequest(userId,"profile", policy);
                 }));
             }
 

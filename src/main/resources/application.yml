@@ -1,0 +1,16 @@
+rate-limiter:
+  policies:
+    profile:
+      capacity: 10
+      refill-rate: 2
+      request-cost: 1
+
+    search:
+      capacity: 5
+      refill-rate: 1
+      request-cost: 1
+
+    payment:
+      capacity: 3
+      refill-rate: 0.5
+      request-cost: 1

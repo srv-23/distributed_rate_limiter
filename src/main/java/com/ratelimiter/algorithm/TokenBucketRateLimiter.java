@@ -18,8 +18,8 @@ public class TokenBucketRateLimiter {
         this.scripts = scripts;
     }
 
-    public TokenBucketResult allowRequest(String userId, RateLimitPolicy policy) {
-        String key = "rate_limit:token_bucket:user:" + userId;
+    public TokenBucketResult allowRequest(String userId,String policyName, RateLimitPolicy policy) {
+        String key = "rate_limit:token_bucket:user:" + policyName + ":user:" + userId;
         List<?> result = redisTemplate.execute(
                 scripts.getTokenBucketScript(),
                 List.of(key),
