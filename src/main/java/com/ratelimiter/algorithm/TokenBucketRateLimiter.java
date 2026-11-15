@@ -28,11 +28,12 @@ public class TokenBucketRateLimiter {
                 String.valueOf(policy.requestCost())
         );
 
-        if(result == null || result.size() != 2){
+        if(result == null || result.size() != 3){
             throw new IllegalStateException("Invalid response from Redis Token Bucket script");
         }
         boolean allowed = "1".equals(result.get(0).toString());
         double remainingTokens = Double.parseDouble(result.get(1).toString());
-        return new TokenBucketResult(allowed, remainingTokens);
+        long retryAfterSeconds = Long.parseLong(result.get(2).toString());
+        return new TokenBucketResult(allowed, remainingTokens, retryAfterSeconds);
     }
 }

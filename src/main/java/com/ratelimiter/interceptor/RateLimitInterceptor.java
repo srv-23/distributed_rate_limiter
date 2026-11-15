@@ -86,16 +86,17 @@ public class RateLimitInterceptor implements HandlerInterceptor {
                         policy
                 );
 
+        response.setHeader("RateLimit-Limit", String.valueOf(policy.bucketCapacity()));
+        response.setHeader("RateLimit-Remaining", String.valueOf(result.getRemainingTokens()));
+
         // Reject requests that exceed the configured limit.
         if (!result.isAllowed()) {
             response.setStatus(429);
             response.setContentType("application/json");
-            response.getWriter().write(
-                    "{\"error\":\"Too Many Requests\"}"
-            );
+            response.setHeader("Retry-After", String.valueOf(result.getRetryAfterSeconds()));
+            response.getWriter().write("{\"error\":\"Too Many Requests\"}");
             return false;
         }
-
         // Allow the request to reach its controller.
         return true;
     }

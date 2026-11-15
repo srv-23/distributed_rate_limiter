@@ -53,7 +53,13 @@ redis.call(
 local ttl = math.ceil(capacity / refillRate) + 1
 redis.call('EXPIRE', KEYS[1], ttl)
 
+local retryAfter = 0
+if allowed == 0 then
+    retryAfter = math.ceil((requestCost - tokens) / refillRate)
+end
+
 return {
     tostring(allowed),
-    string.format('%.6f', tokens)
-    }
+    string.format("%.6f", tokens),
+    tostring(retryAfter)
+  }

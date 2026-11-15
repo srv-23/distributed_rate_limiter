@@ -14,3 +14,8 @@ rate-limiter:
       capacity: 3
       refill-rate: 0.5
       request-cost: 1
+
+    distributed-test:
+      capacity: 10
+      refill-rate: 0.01
+      request-cost: 1
