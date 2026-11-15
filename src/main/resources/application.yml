@@ -1,4 +1,6 @@
 rate-limiter:
+  failure-strategy: fail-closed
+
   policies:
     profile:
       capacity: 10
