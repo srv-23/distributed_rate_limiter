@@ -1,3 +1,4 @@
+
 package com.ratelimiter.redis;
 
 import org.springframework.core.io.ClassPathResource;
@@ -8,16 +9,22 @@ import java.util.List;
 
 @Component
 public class RateLimiterScripts {
+
     private final DefaultRedisScript<List> fixedWindowScript;
     private final DefaultRedisScript<List> tokenBucketScript;
 
-    public RateLimiterScripts(){
+    public RateLimiterScripts() {
+
         fixedWindowScript = new DefaultRedisScript<>();
-        fixedWindowScript.setLocation(new ClassPathResource("scripts/fixed_window.lua"));
+        fixedWindowScript.setLocation(
+                new ClassPathResource("scripts/fixed_window.lua")
+        );
         fixedWindowScript.setResultType(List.class);
 
         tokenBucketScript = new DefaultRedisScript<>();
-        tokenBucketScript.setLocation(new ClassPathResource("scripts/token_bucket.lua"));
+        tokenBucketScript.setLocation(
+                new ClassPathResource("scripts/token_bucket.lua")
+        );
         tokenBucketScript.setResultType(List.class);
     }
 

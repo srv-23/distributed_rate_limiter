@@ -1,3 +1,16 @@
+spring:
+  application:
+    name: distributed-rate-limiter
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2s
+
+server:
+  port: 8080
+
 rate-limiter:
   failure-strategy: fail-open
 
