@@ -1,5 +1,5 @@
 rate-limiter:
-  failure-strategy: fail-closed
+  failure-strategy: fail-open
 
   policies:
     profile:

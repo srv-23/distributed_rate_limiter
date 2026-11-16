@@ -1,3 +1,4 @@
+
 package com.ratelimiter.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -8,17 +9,21 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "rate-limiter")
 public record RateLimitProperties(
         String failureStrategy,
-        Map<String,Policy> policies
+        Map<String, Policy> policies
 ) {
-    public RateLimitProperties{
-        if(failureStrategy == null || failureStrategy().isBlank()){
+
+    public RateLimitProperties {
+        if (failureStrategy == null || failureStrategy.isBlank()) {
             failureStrategy = "fail-closed";
+        } else {
+            failureStrategy = failureStrategy.toLowerCase(Locale.ROOT);
         }
 
-        failureStrategy = failureStrategy.toLowerCase(Locale.ROOT);
-
-        if(!failureStrategy.equals("fail-open") && !failureStrategy.equals("fail-closed")){
-            throw new IllegalArgumentException("Invalid rate limiter failure strategy: " + failureStrategy + ". Supported values: fail-open, fail-closed");
+        if (!failureStrategy.equals("fail-open")
+                && !failureStrategy.equals("fail-closed")) {
+            throw new IllegalArgumentException(
+                    "Invalid failure strategy: " + failureStrategy
+            );
         }
     }
 
@@ -26,7 +31,6 @@ public record RateLimitProperties(
             double capacity,
             double refillRate,
             double requestCost
-    ){
+    ) {
     }
 }
-

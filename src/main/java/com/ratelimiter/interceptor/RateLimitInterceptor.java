@@ -1,11 +1,11 @@
 package com.ratelimiter.interceptor;
 
 import com.ratelimiter.annotation.RateLimited;
-import com.ratelimiter.algorithm.TokenBucketRateLimiter;
 import com.ratelimiter.config.RateLimitProperties;
+import com.ratelimiter.model.RateLimitDecision;
 import com.ratelimiter.model.RateLimitPolicy;
-import com.ratelimiter.model.TokenBucketResult;
 
+import com.ratelimiter.service.RateLimitExecutionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -16,14 +16,14 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Component
 public class RateLimitInterceptor implements HandlerInterceptor {
 
-    private final TokenBucketRateLimiter tokenBucketRateLimiter;
+    private final RateLimitExecutionService rateLimitExecutionService;
     private final RateLimitProperties rateLimitProperties;
 
     public RateLimitInterceptor(
-            TokenBucketRateLimiter tokenBucketRateLimiter,
+            RateLimitExecutionService rateLimitExecutionService,
             RateLimitProperties rateLimitProperties
     ) {
-        this.tokenBucketRateLimiter = tokenBucketRateLimiter;
+        this.rateLimitExecutionService = rateLimitExecutionService;
         this.rateLimitProperties = rateLimitProperties;
     }
 
@@ -79,22 +79,24 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         }
 
         // Execute the Token Bucket algorithm.
-        TokenBucketResult result =
-                tokenBucketRateLimiter.allowRequest(
+        RateLimitDecision decision =
+                rateLimitExecutionService.execute(
                         userId,
                         policyName,
                         policy
                 );
 
-        response.setHeader("RateLimit-Limit", String.valueOf(policy.bucketCapacity()));
-        response.setHeader("RateLimit-Remaining", String.valueOf(result.getRemainingTokens()));
+        if(decision.rateLimitEvaluated()){
+            response.setHeader("RateLimit-Limit", String.valueOf(policy.bucketCapacity()));
+            response.setHeader("RateLimit-Remaining", String.valueOf(decision.remainingTokens()));
+        } else {
+            response.setHeader("RateLimit-Bypassed", "true");
+        }
 
-        // Reject requests that exceed the configured limit.
-        if (!result.isAllowed()) {
+        if(!decision.allowed()){
             response.setStatus(429);
-            response.setContentType("application/json");
-            response.setHeader("Retry-After", String.valueOf(result.getRetryAfterSeconds()));
-            response.getWriter().write("{\"error\":\"Too Many Requests\"}");
+            response.setHeader("Retry-After", String.valueOf(decision.retryAfterSeconds()));
+            response.getWriter().write( "{\"error\":\"Too Many Requests\"}");
             return false;
         }
         // Allow the request to reach its controller.

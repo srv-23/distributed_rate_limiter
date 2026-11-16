@@ -4,9 +4,11 @@ import com.ratelimiter.annotation.RateLimited;
 import com.ratelimiter.algorithm.FixedWindowRateLimiter;
 import com.ratelimiter.algorithm.TokenBucketRateLimiter;
 import com.ratelimiter.config.RateLimitProperties;
+import com.ratelimiter.model.RateLimitDecision;
 import com.ratelimiter.model.RateLimitPolicy;
 import com.ratelimiter.model.RateLimitResult;
 import com.ratelimiter.model.TokenBucketResult;
+import com.ratelimiter.service.RateLimitExecutionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,12 +20,12 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api")
 public class RateLimitController {
     private final FixedWindowRateLimiter fixedWindowRateLimiter;
-    private final TokenBucketRateLimiter tokenBucketRateLimiter;
+    private final RateLimitExecutionService rateLimitExecutionService;
     private final RateLimitProperties rateLimitProperties;
 
-    public RateLimitController(FixedWindowRateLimiter fixedWindowRateLimiter, TokenBucketRateLimiter tokenBucketRateLimiter, RateLimitProperties rateLimitProperties) {
+    public RateLimitController(FixedWindowRateLimiter fixedWindowRateLimiter, RateLimitExecutionService rateLimitExecutionService, RateLimitProperties rateLimitProperties) {
         this.fixedWindowRateLimiter = fixedWindowRateLimiter;
-        this.tokenBucketRateLimiter = tokenBucketRateLimiter;
+        this.rateLimitExecutionService = rateLimitExecutionService;
         this.rateLimitProperties = rateLimitProperties;
     }
 
@@ -33,7 +35,7 @@ public class RateLimitController {
     }
 
     @GetMapping("/test-token-bucket")
-    public TokenBucketResult testTokenBucket(
+    public RateLimitDecision testTokenBucket(
             @RequestParam String userId,
             @RequestParam(defaultValue = "profile") String policyName
     ) {
@@ -54,7 +56,7 @@ public class RateLimitController {
                 configuredPolicy.requestCost()
         );
 
-        return tokenBucketRateLimiter.allowRequest(
+        return rateLimitExecutionService.execute(
                 userId,
                 policyName,
                 policy
